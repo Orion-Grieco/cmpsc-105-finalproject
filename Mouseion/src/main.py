@@ -10,18 +10,13 @@ stopwords = spacy.lang.en.stop_words.STOP_WORDS
 
 data_folder = "data/PMC001xxxxxx"
 comparison_text = input("Enter text to compare to the article: ")
-"""
-for word in comparison_text.split():
-    print(word)
-"""
-
 
 temp_dict = {}
 data_list = []
 summative_score = 0
 for filename in os.scandir(data_folder):
-    prep_file = open(filename.path,"r").read()
-    #print(pubmed_parser.parse_pubmed_caption(open_file.read()))
+    prep_file = open(filename.path, "r").read()
+    # pubmed_parser.parse_pubmed_caption(prep_file.read())
 
     # removing stop words
     filtered_text = " ".join(
@@ -33,20 +28,23 @@ for filename in os.scandir(data_folder):
         data.decompose()
     text = soup.get_text()
 
-
     comparing_text_doc = nlp(comparison_text)
     base_doc = nlp(text)
     # Creating a dictionary for the similarity matrix
-    try: temp_dict = {
-        "INPUT": comparison_text,
-        "PMID": pubmed_parser.parse_pubmed_caption(prep_file)[0]["pmid"], #pubmed_parser.parse_pubmed_caption(soup)[0]["pmid"], #type: ignore
-        "SIM_SCORE": base_doc.similarity(comparing_text_doc),
-    }
-    except: temp_dict = {
-        "INPUT": comparison_text,
-        "PMID": "N/A", #pubmed_parser.parse_pubmed_caption(soup)[0]["pmid"], #type: ignore
-        "SIM_SCORE": base_doc.similarity(comparing_text_doc),
-    }
+    try:
+        temp_dict = {
+            "INPUT": comparison_text,
+            "PMID": pubmed_parser.parse_pubmed_xml(prep_file)[0]["pmid"],  # type: ignore
+            "SIM_SCORE": base_doc.similarity(comparing_text_doc),
+            "SUBJECTS": pubmed_parser.parse_pubmed_xml(prep_file)[0]["subjects"],  # type: ignore
+        }
+    except:
+        temp_dict = {
+            "INPUT": comparison_text,
+            "PMID": "N/A",  # pubmed_parser.parse_pubmed_caption(soup)[0]["pmid"], #type: ignore
+            "SIM_SCORE": base_doc.similarity(comparing_text_doc),
+            "SUBJECTS": pubmed_parser.parse_pubmed_xml(prep_file)["subjects"],  # type: ignore
+        }
     summative_score += float(temp_dict["SIM_SCORE"])
     data_list.append(temp_dict)
 with open("sim_matrix_results.json", "w+") as file:

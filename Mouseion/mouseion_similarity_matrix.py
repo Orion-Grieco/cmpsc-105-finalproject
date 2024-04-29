@@ -42,7 +42,7 @@ for filename in os.scandir(data_folder):
     text = soup.get_text()
 
     #print(f"File Name and Path : {filename} : {text} + \n")
-    pmid_val = parse_medline_grant_id(text)
+    pmid_val = parse_xml_web(text)
     comparing_text_doc = nlp(comparison_text)
     base_doc = nlp(text)
     print(type(pmid_val), filename)
